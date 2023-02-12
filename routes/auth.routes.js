@@ -4,5 +4,6 @@ module.exports = (app) => {
 
     router.post("/user/generate-token", auth.generateToken);
     router.get("/user/validation-token", auth.validationToken);
+    router.get("/user/regis-user", auth.registerUser);
     app.use("/auth", router)
 }
