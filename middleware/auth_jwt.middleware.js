@@ -1,5 +1,4 @@
-const auth_config = require('../config/auth.config');
-const jwt = require('jsonwebtoken');
+const authJWT = require("../helpers/auth_jwt.helpers")
 
 exports.verifyToken = async (req, res, next) => {
     try {
@@ -7,7 +6,7 @@ exports.verifyToken = async (req, res, next) => {
         if (!token) {
             return res.status(401).send({"status": "gagal", "pesan": "tidak terdapat token"});
         }
-        let verified = jwt.verify(token, auth_config.secret_key);
+        let verified = authJWT.validationToken(token);
         if (!verified) {
             return res.status(401).send({"status": "gagal", "pesan": "akses tidak terotorisasi"});    
         }

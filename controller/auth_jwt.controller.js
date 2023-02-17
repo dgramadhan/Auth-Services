@@ -1,8 +1,8 @@
-const jwt = require('jsonwebtoken');
 const { nanoid } = require('nanoid');
-const auth_config = require("../config/auth.config")
 const db = require("../models");
 const User = db.Users;
+const authJwt = require("../helpers/auth_jwt.helpers")
+
 
 exports.generateToken = async (req, res) => {
     let id = nanoid(16);
@@ -10,8 +10,7 @@ exports.generateToken = async (req, res) => {
         userId: id,
         time: Date()
     }
-    let token = jwt.sign(data, auth_config.secret_key, { expiresIn: 86400 });
-    res.send({ "status": "success", "token": token });
+    res.send({ "status": "success", "token": authJwt.generateToken(data) });
 }
 
 exports.validationToken = async (req, res) => {
@@ -20,7 +19,7 @@ exports.validationToken = async (req, res) => {
         if (!token) {
             return res.status(401).send({ "status": "gagal", "pesan": "tidak terdapat token" });
         }
-        let verified = jwt.verify(token, auth_config.secret_key);
+        let verified = authJwt.validationToken(token)
         if (verified) {
             return res.status(200).send({ "status": "success", "pesan": "token terverifikasi", "data": verified });
         }
@@ -30,11 +29,11 @@ exports.validationToken = async (req, res) => {
     }
 }
 
-exports.registerUser = async (req, res) => {
+exports.registerUser = (req, res) => {
     try {
         var addUser = new User({
-            nama: 'TestUsername',
-            password: 'TestPassword',
+            nama: req.body.nama,
+            password: req.body.password,
         });
 
         addUser.save((err) => {
@@ -46,5 +45,31 @@ exports.registerUser = async (req, res) => {
         });
     } catch {
 
+    }
+}
+
+exports.loginUser = async (req,res) => {
+    try {
+        var addUser = {
+            nama: req.body.nama,
+            password: req.body.password,
+        };
+
+        const userCheck =  await User.findOne({
+            nama: addUser.nama,
+            password: addUser.password
+        }, '_id nama');
+        
+        if (userCheck != null) {
+            return res.status(200).send({ "status" : "success", 
+                "pesan" : "berhasil login", 
+                "token" : authJwt.generateToken(userCheck)});
+        } else {
+            return res.status(400).send({ "status" : "gagal", "pesan" : "gagal login"});
+        }
+    } catch (err) {
+        if (err) {
+            return res.status(400).send({ "status" : "gagal", "pesan" : "gagal login " + err});
+        } 
     }
 }

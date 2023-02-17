@@ -3,8 +3,11 @@ module.exports = mongoose => {
         nama: String,
         password: String,
     },
-    { timestamps: true });
-    const User = mongoose.model('User', userSchema);
+    { 
+        versionKey: false,
+        timestamps: true });
+        
+    const User = mongoose.model('user', userSchema);
 
     return User;
 }
