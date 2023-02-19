@@ -2,6 +2,7 @@ const { nanoid } = require('nanoid');
 const db = require("../models");
 const User = db.Users;
 const authJwt = require("../helpers/auth_jwt.helpers")
+const bcrypt = require("bcrypt")
 
 
 exports.generateToken = async (req, res) => {
@@ -29,11 +30,13 @@ exports.validationToken = async (req, res) => {
     }
 }
 
-exports.registerUser = (req, res) => {
+exports.registerUser = async (req, res) => {
     try {
+        const salt = await bcrypt.genSalt();
+        const passwordHash = await bcrypt.hash(req.body.password, salt)
         var addUser = new User({
             nama: req.body.nama,
-            password: req.body.password,
+            password: passwordHash,
         });
 
         addUser.save((err) => {
@@ -49,6 +52,7 @@ exports.registerUser = (req, res) => {
 }
 
 exports.loginUser = async (req,res) => {
+   
     try {
         var addUser = {
             nama: req.body.nama,
@@ -57,13 +61,17 @@ exports.loginUser = async (req,res) => {
 
         const userCheck =  await User.findOne({
             nama: addUser.nama,
-            password: addUser.password
-        }, '_id nama');
-        
+        });
+
         if (userCheck != null) {
-            return res.status(200).send({ "status" : "success", 
+            const compare = await bcrypt.compare(req.body.password, userCheck.password);
+            if (compare) {
+                return res.status(200).send({ "status" : "success", 
                 "pesan" : "berhasil login", 
                 "token" : authJwt.generateToken(userCheck)});
+            } else {
+                return res.status(400).send({ "status" : "gagal", "pesan" : "gagal login"});
+            }
         } else {
             return res.status(400).send({ "status" : "gagal", "pesan" : "gagal login"});
         }
