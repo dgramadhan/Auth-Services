@@ -9,5 +9,7 @@ module.exports = (app) => {
     router.get("/user/validation-token", auth.validationToken);
     router.post("/user/regis-user", jsonParser, auth.registerUser);
     router.post("/user/login", jsonParser, auth.loginUser)
+    // router.get("/user/generate-email", auth.generateEmail)
+    router.get("/user/verify/:id", auth.verifyEmail)
     app.use("/auth", router)
 }

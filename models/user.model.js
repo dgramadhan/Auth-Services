@@ -2,6 +2,11 @@ module.exports = mongoose => {
     const userSchema = mongoose.Schema({
         nama: String,
         password: String,
+        email : String,
+        verified: {
+            type: Boolean,
+            default: false
+        }
     },
     { 
         versionKey: false,
