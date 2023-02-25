@@ -100,8 +100,11 @@ exports.loginUser = async (req,res) => {
         const userCheck =  await User.findOne({
             nama: addUser.nama,
         });
-
+        
         if (userCheck != null) {
+            if (userCheck.verified != true) {
+                return res.status(400).send({ "status" : "gagal", "pesan" : "silahkan verifikasi terlebih dahulu"});
+            }
             const compare = await bcrypt.compare(req.body.password, userCheck.password);
             if (compare) {
                 return res.status(200).send({ "status" : "success", 
@@ -138,7 +141,7 @@ exports.verifyEmail = async (req, res) => {
             return res.status(404).send({ "status" : "gagal", "pesan" : "user tidak ditemukan"})
         }
 
-        return res.status(404).send({ "status" : "berhasil", "pesan" : "user sudah di verifikasi"})
+        return res.status(200).send({ "status" : "berhasil", "pesan" : "user sudah di verifikasi"})
 
     } catch (error) {
         console.log(error)
